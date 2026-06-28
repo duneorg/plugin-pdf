@@ -88,7 +88,8 @@ function ChevronBarRight() {
 }
 
 export default function PDFViewer(
-  { pdfUrl, workerSrc = "/static/pdf.worker.min.js", labels = {} }: PDFViewerProps,
+  { pdfUrl, workerSrc = "/static/pdf.worker.min.js", labels = {} }:
+    PDFViewerProps,
 ) {
   const l = { ...DEFAULT_LABELS, ...labels };
 
@@ -104,7 +105,9 @@ export default function PDFViewer(
       // deno-lint-ignore no-explicit-any
       const pdfjsLib = (window as any).pdfjsLib;
       if (!pdfjsLib) {
-        console.error("[dune/pdf] PDF.js not loaded — add <script src='/static/pdf.min.js' /> to your template");
+        console.error(
+          "[dune/pdf] PDF.js not loaded — add <script src='/static/pdf.min.js' /> to your template",
+        );
         return;
       }
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
@@ -112,7 +115,7 @@ export default function PDFViewer(
         const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
         setPdfDoc(pdf);
         setNumPages(pdf.numPages);
-        const hash = window.location.hash;
+        const hash = globalThis.location.hash;
         const pageMatch = hash.match(/page=(\d+)/);
         const initialPage = pageMatch ? parseInt(pageMatch[1]) : 1;
         setPageNum(initialPage);
@@ -124,13 +127,17 @@ export default function PDFViewer(
     loadPDF();
   }, [pdfUrl]);
 
-  // deno-lint-ignore no-explicit-any
-  const renderPage = async (pdf: any, pageNumber: number) => {
+  const renderPage = async (pdf: { getPage(n: number): Promise<unknown> }, pageNumber: number) => {
     if (!canvasRef.current || !containerRef.current) return;
-    // deno-lint-ignore no-explicit-any
-    if (renderTaskRef.current) { (renderTaskRef.current as any).cancel(); renderTaskRef.current = null; }
+    if (renderTaskRef.current) {
+      (renderTaskRef.current as { cancel(): void }).cancel();
+      renderTaskRef.current = null;
+    }
 
-    const page = await pdf.getPage(pageNumber);
+    const page = await pdf.getPage(pageNumber) as {
+      getViewport(opts: { scale: number }): { width: number; height: number };
+      render(opts: { canvasContext: CanvasRenderingContext2D | null; viewport: unknown }): { promise: Promise<void> };
+    };
     const containerWidth = containerRef.current.clientWidth;
     const pageViewport = page.getViewport({ scale: 1.0 });
     const calculatedScale = containerWidth / pageViewport.width;
@@ -144,11 +151,12 @@ export default function PDFViewer(
 
     renderTaskRef.current = page.render({ canvasContext: context, viewport });
     try {
-      // deno-lint-ignore no-explicit-any
-      await (renderTaskRef.current as any).promise;
+      await (renderTaskRef.current as { promise: Promise<void> }).promise;
       renderTaskRef.current = null;
     } catch (error: unknown) {
-      if ((error as { name?: string })?.name !== "RenderingCancelledException") {
+      if (
+        (error as { name?: string })?.name !== "RenderingCancelledException"
+      ) {
         console.error("[dune/pdf] Error rendering page:", error);
       }
     }
@@ -157,16 +165,15 @@ export default function PDFViewer(
   const goToPage = (newPageNum: number) => {
     if (newPageNum >= 1 && newPageNum <= numPages && pdfDoc) {
       setPageNum(newPageNum);
-      // deno-lint-ignore no-explicit-any
-      renderPage(pdfDoc as any, newPageNum);
+      renderPage(pdfDoc as Parameters<typeof renderPage>[0], newPageNum);
     }
   };
 
   useEffect(() => {
     if (!pdfDoc) return;
     const handleResize = () => renderPage(pdfDoc, pageNum);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    globalThis.addEventListener("resize", handleResize);
+    return () => globalThis.removeEventListener("resize", handleResize);
   }, [pdfDoc, pageNum]);
 
   useEffect(() => {
@@ -179,7 +186,9 @@ export default function PDFViewer(
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
-    const handleScroll = () => { el.scrollLeft = 0; };
+    const handleScroll = () => {
+      el.scrollLeft = 0;
+    };
     el.addEventListener("scroll", handleScroll);
     return () => el.removeEventListener("scroll", handleScroll);
   }, []);
@@ -211,30 +220,53 @@ export default function PDFViewer(
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) return;
       switch (e.key) {
-        case "ArrowLeft": if (pageNum > 1) goToPage(pageNum - 1); break;
-        case "ArrowRight": if (pageNum < numPages) goToPage(pageNum + 1); break;
-        case "Home": goToPage(1); break;
-        case "End": goToPage(numPages); break;
+        case "ArrowLeft":
+          if (pageNum > 1) goToPage(pageNum - 1);
+          break;
+        case "ArrowRight":
+          if (pageNum < numPages) goToPage(pageNum + 1);
+          break;
+        case "Home":
+          goToPage(1);
+          break;
+        case "End":
+          goToPage(numPages);
+          break;
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [pageNum, numPages, pdfDoc]);
 
   const handlePrint = () => {
-    const w = window.open(pdfUrl, "_blank");
+    const w = globalThis.open(pdfUrl, "_blank");
     if (w) w.addEventListener("load", () => w.print());
   };
 
   const Controls = () => (
     <div class="pdf-controls">
       <div class="pdf-nav-group">
-        <button onClick={() => goToPage(1)} disabled={pageNum <= 1} class="pdf-control-btn" title={l.firstPage}>
+        <button
+          type="button"
+          onClick={() => goToPage(1)}
+          disabled={pageNum <= 1}
+          class="pdf-control-btn"
+          title={l.firstPage}
+        >
           <ChevronBarLeft />
         </button>
-        <button onClick={() => goToPage(pageNum - 1)} disabled={pageNum <= 1} class="pdf-control-btn" title={l.prevPage}>
+        <button
+          type="button"
+          onClick={() => goToPage(pageNum - 1)}
+          disabled={pageNum <= 1}
+          class="pdf-control-btn"
+          title={l.prevPage}
+        >
           <ChevronLeft />
         </button>
       </div>
@@ -254,15 +286,27 @@ export default function PDFViewer(
         <span class="pdf-total-pages">{numPages}</span>
       </span>
       <div class="pdf-nav-group">
-        <button onClick={() => goToPage(pageNum + 1)} disabled={pageNum >= numPages} class="pdf-control-btn" title={l.nextPage}>
+        <button
+          type="button"
+          onClick={() => goToPage(pageNum + 1)}
+          disabled={pageNum >= numPages}
+          class="pdf-control-btn"
+          title={l.nextPage}
+        >
           <ChevronRight />
         </button>
-        <button onClick={() => goToPage(numPages)} disabled={pageNum >= numPages} class="pdf-control-btn" title={l.lastPage}>
+        <button
+          type="button"
+          onClick={() => goToPage(numPages)}
+          disabled={pageNum >= numPages}
+          class="pdf-control-btn"
+          title={l.lastPage}
+        >
           <ChevronBarRight />
         </button>
       </div>
       <div class="pdf-toolbar-separator" />
-      <button onClick={handlePrint} class="pdf-control-btn" title={l.print}>
+      <button type="button" onClick={handlePrint} class="pdf-control-btn" title={l.print}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
           <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z" />
           <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
@@ -283,22 +327,36 @@ export default function PDFViewer(
       <div class="pdf-canvas-container" ref={containerRef}>
         {pageNum > 1 && (
           <button
+            type="button"
             class="pdf-tap-zone pdf-tap-zone-left"
             onClick={() => goToPage(pageNum - 1)}
             aria-label={l.prevPage}
           >
-            <svg class="pdf-tap-zone-icon" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
+            <svg
+              class="pdf-tap-zone-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
               <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
             </svg>
           </button>
         )}
         {pageNum < numPages && (
           <button
+            type="button"
             class="pdf-tap-zone pdf-tap-zone-right"
             onClick={() => goToPage(pageNum + 1)}
             aria-label={l.nextPage}
           >
-            <svg class="pdf-tap-zone-icon" width="24" height="24" viewBox="0 0 16 16" fill="currentColor">
+            <svg
+              class="pdf-tap-zone-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+            >
               <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
             </svg>
           </button>

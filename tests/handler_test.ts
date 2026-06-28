@@ -86,7 +86,10 @@ Deno.test("handler: 400 for empty filename", async () => {
 
 Deno.test("handler: custom Cache-Control header", async () => {
   const dir = await makeTempDir();
-  await Deno.writeFile(join(dir, "a.pdf"), new Uint8Array([0x25, 0x50, 0x44, 0x46]));
+  await Deno.writeFile(
+    join(dir, "a.pdf"),
+    new Uint8Array([0x25, 0x50, 0x44, 0x46]),
+  );
   const handler = createPdfHandler({ dir, cacheControl: "no-cache" });
   const response = await handler(makeReq(), makeCtx("a.pdf"));
   assertEquals(response.headers.get("Cache-Control"), "no-cache");
@@ -95,7 +98,10 @@ Deno.test("handler: custom Cache-Control header", async () => {
 
 Deno.test("handler: default Cache-Control is public max-age=86400", async () => {
   const dir = await makeTempDir();
-  await Deno.writeFile(join(dir, "b.pdf"), new Uint8Array([0x25, 0x50, 0x44, 0x46]));
+  await Deno.writeFile(
+    join(dir, "b.pdf"),
+    new Uint8Array([0x25, 0x50, 0x44, 0x46]),
+  );
   const handler = createPdfHandler({ dir });
   const response = await handler(makeReq(), makeCtx("b.pdf"));
   assertEquals(response.headers.get("Cache-Control"), "public, max-age=86400");

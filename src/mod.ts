@@ -1,12 +1,12 @@
 /**
- * @dune/pdf-archive
+ * @dune/pdf
  *
  * PDF archive plugin for Dune sites. Provides:
  *
  * - **PDF serving** — a secure route handler that serves PDF files from a
- *   configured directory (`@dune/pdf-archive/handler`)
+ *   configured directory (`@dune/pdf/handler`)
  * - **Text extraction** — plain text extraction from PDFs for search indexing
- *   (`@dune/pdf-archive/extract`)
+ *   (`@dune/pdf/extract`)
  *
  * ## Usage
  *
@@ -55,4 +55,4 @@ export type { PdfTextResult } from "./extract.ts";
 export { createPdfHandler } from "./handler.ts";
 export type { PdfHandlerOptions } from "./handler.ts";
 export { default as PDFViewer } from "./viewer.tsx";
-export type { PDFViewerProps, PDFViewerLabels } from "./viewer.tsx";
+export type { PDFViewerLabels, PDFViewerProps } from "./viewer.tsx";
