@@ -97,8 +97,23 @@ function titleFromFilename(filename: string): string {
 }
 
 /**
- * Plugin factory. The Dune loader calls this with the merged plugin config
- * from `site.yaml`.
+ * Dune plugin factory for PDF serving and search indexing.
+ *
+ * The Dune loader calls this with the merged plugin config from `site.yaml`.
+ * Registers a public GET route at `{config.route}/:filename` that serves PDF
+ * files from `config.dir`, and (when `config.index` is true) hooks into
+ * `onSearchRecordsCollect` to extract and index PDF text so PDFs appear in
+ * site search results.
+ *
+ * Use via `site.yaml`:
+ * ```yaml
+ * plugins:
+ *   - src: "jsr:@dune/plugin-pdf"
+ *     config:
+ *       dir: "static/pdfs"
+ *       route: "/pdf"
+ *       index: true
+ * ```
  */
 function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
   const dir = resolveDir(config.dir ?? "static/pdfs");

@@ -35,6 +35,7 @@ export interface PDFViewerLabels {
   download?: string;
 }
 
+/** Props for the {@link PDFViewer} Preact island. */
 export interface PDFViewerProps {
   /** URL of the PDF to display. */
   pdfUrl: string;
@@ -88,6 +89,17 @@ function ChevronBarRight() {
   );
 }
 
+/**
+ * Preact island that renders a paginated in-browser PDF viewer.
+ *
+ * Loads PDF.js from `workerSrc` (defaults to `/static/pdf.worker.min.js`) and
+ * renders the PDF at `pdfUrl` one page at a time with first/prev/next/last
+ * navigation, a print button, and a direct download link.
+ *
+ * Served as a client bundle at `/plugins/pdf/viewer.js` when the plugin is
+ * registered. Import it in a template with a `<script>` tag or use it directly
+ * as a Preact component.
+ */
 export default function PDFViewer(
   { pdfUrl, workerSrc = "/static/pdf.worker.min.js", labels = {} }:
     PDFViewerProps,
