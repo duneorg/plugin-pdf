@@ -74,7 +74,9 @@ interface DunePluginLike {
   description?: string;
   hooks: Record<string, (ctx: unknown) => unknown | Promise<unknown>>;
   // deno-lint-ignore no-explicit-any
-  publicRoutes?: Array<{ method?: string; path: string; handler: (fc: any) => unknown }>;
+  publicRoutes?: Array<
+    { method?: string; path: string; handler: (fc: any) => unknown }
+  >;
   clientEntries?: Record<string, string>;
 }
 
@@ -98,7 +100,7 @@ function titleFromFilename(filename: string): string {
  * Plugin factory. The Dune loader calls this with the merged plugin config
  * from `site.yaml`.
  */
-export default function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
+function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
   const dir = resolveDir(config.dir ?? "static/pdfs");
   const routeBase = (config.route ?? "/pdf").replace(/\/+$/, "") || "/pdf";
   const index = config.index ?? true;
@@ -127,7 +129,8 @@ export default function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike 
 
   if (index) {
     plugin.hooks.onSearchRecordsCollect = async (ctx: unknown) => {
-      const records = (ctx as { data: { records: InjectedSearchRecord[] } }).data.records;
+      const records =
+        (ctx as { data: { records: InjectedSearchRecord[] } }).data.records;
       let entries: Deno.DirEntry[];
       try {
         entries = [...Deno.readDirSync(dir)];
@@ -137,7 +140,9 @@ export default function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike 
       }
 
       for (const entry of entries) {
-        if (!entry.isFile || !entry.name.toLowerCase().endsWith(".pdf")) continue;
+        if (!entry.isFile || !entry.name.toLowerCase().endsWith(".pdf")) {
+          continue;
+        }
         try {
           const { text } = await extractPdfText(join(dir, entry.name));
           if (!text) continue;
@@ -163,3 +168,5 @@ export default function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike 
 
 // The loader reads `.pluginName` to look up config before invoking the factory.
 pdfPlugin.pluginName = "pdf";
+
+export default pdfPlugin;
