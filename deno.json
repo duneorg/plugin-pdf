@@ -1,12 +1,14 @@
 {
   "name": "@dune/plugin-pdf",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "license": "MIT",
   "exports": {
     ".": "./src/mod.ts",
+    "./plugin": "./src/plugin.ts",
     "./extract": "./src/extract.ts",
     "./handler": "./src/handler.ts",
-    "./viewer": "./src/viewer.tsx"
+    "./viewer": "./src/viewer.tsx",
+    "./client": "./src/client.tsx"
   },
   "imports": {
     "@std/path": "jsr:@std/path@^1",
@@ -17,7 +19,7 @@
     "preact/jsx-dev-runtime": "npm:preact@^10/jsx-dev-runtime"
   },
   "tasks": {
-    "test": "deno test --allow-read tests/",
+    "test": "deno test --allow-read --allow-write tests/",
     "check": "deno fmt --check && deno lint && deno check src/**/*.ts tests/**/*.ts"
   },
   "lint": {

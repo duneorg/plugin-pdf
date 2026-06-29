@@ -41,7 +41,7 @@ export interface PdfTextResult {
  *
  * @example
  * ```ts
- * import { extractPdfText } from "@dune/pdf-archive/extract";
+ * import { extractPdfText } from "@dune/plugin-pdf/extract";
  *
  * const result = await extractPdfText("/path/to/issue.pdf");
  * console.log(`${result.pageCount} pages, ${result.text.length} chars`);

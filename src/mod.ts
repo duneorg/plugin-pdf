@@ -1,20 +1,33 @@
 /**
- * @dune/pdf
+ * @dune/plugin-pdf
  *
- * PDF archive plugin for Dune sites. Provides:
+ * PDF plugin for Dune sites. Serves PDF files and indexes their text for
+ * search. Enable it from `site.yaml` with no manual wiring:
  *
- * - **PDF serving** — a secure route handler that serves PDF files from a
- *   configured directory (`@dune/pdf/handler`)
- * - **Text extraction** — plain text extraction from PDFs for search indexing
- *   (`@dune/pdf/extract`)
+ * ```yaml
+ * plugins:
+ *   - src: "jsr:@dune/plugin-pdf"
+ *     config:
+ *       dir: "static/pdfs"   # default: static/pdfs
+ *       route: "/pdf"        # default: /pdf
+ *       index: true          # extract + index PDF text (default: true)
+ * ```
  *
- * ## Usage
+ * The package's default export is the plugin factory (see `./plugin`). The
+ * lower-level building blocks remain available for custom wiring:
  *
- * ### 1. Serve PDFs
+ * - **PDF serving** — `createPdfHandler` (`@dune/plugin-pdf/handler`)
+ * - **Text extraction** — `extractPdfText` (`@dune/plugin-pdf/extract`)
+ * - **Browser viewer** — `PDFViewer` island (`@dune/plugin-pdf/viewer`), or the
+ *   auto-mounting client bundle served at `/plugins/pdf/viewer.js`
+ *
+ * ## Manual usage
+ *
+ * ### Serve PDFs
  *
  * Create `routes/pdf/[filename].ts`:
  * ```ts
- * import { createPdfHandler } from "@dune/pdf-archive/handler";
+ * import { createPdfHandler } from "@dune/plugin-pdf/handler";
  * import { join } from "@std/path";
  *
  * const PDF_DIR = join(Deno.cwd(), "static", "pdfs");
@@ -22,11 +35,10 @@
  * export const handler = { GET: createPdfHandler({ dir: PDF_DIR }) };
  * ```
  *
- * ### 2. Index PDF text for search
+ * ### Extract PDF text
  *
- * In your build script or a Dune hook:
  * ```ts
- * import { extractPdfText } from "@dune/pdf-archive/extract";
+ * import { extractPdfText } from "@dune/plugin-pdf/extract";
  *
  * const result = await extractPdfText("/path/to/issue.pdf");
  * // result.text — concatenated text of all pages
@@ -41,15 +53,11 @@
  * extraction (column detection, footnotes, etc.) build on top of `unpdf`
  * directly with a publication-specific implementation.
  *
- * Search engine integration (injecting PDF text as search records) is
- * performed by the consuming site, since Dune's search index is built from
- * content pages at startup. Use the `extractPdfText` utility in a build
- * script and write the results as content files, or integrate via a custom
- * plugin hook once Dune supports search record injection.
- *
  * @module
  */
 
+export { default } from "./plugin.ts";
+export type { PdfPluginConfig } from "./plugin.ts";
 export { extractPdfText } from "./extract.ts";
 export type { PdfTextResult } from "./extract.ts";
 export { createPdfHandler } from "./handler.ts";

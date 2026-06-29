@@ -108,7 +108,7 @@ export default function PDFViewer(
       const pdfjsLib = (window as any).pdfjsLib;
       if (!pdfjsLib) {
         console.error(
-          "[dune/pdf] PDF.js not loaded — add <script src='/static/pdf.min.js' /> to your template",
+          "[dune/plugin-pdf] PDF.js not loaded — add <script src='/static/pdf.min.js' /> to your template",
         );
         return;
       }
@@ -123,7 +123,7 @@ export default function PDFViewer(
         setPageNum(initialPage);
         renderPage(pdf, initialPage);
       } catch (error) {
-        console.error("[dune/pdf] Error loading PDF:", error);
+        console.error("[dune/plugin-pdf] Error loading PDF:", error);
       }
     };
     loadPDF();
@@ -167,7 +167,7 @@ export default function PDFViewer(
       if (
         (error as { name?: string })?.name !== "RenderingCancelledException"
       ) {
-        console.error("[dune/pdf] Error rendering page:", error);
+        console.error("[dune/plugin-pdf] Error rendering page:", error);
       }
     }
   };

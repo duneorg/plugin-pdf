@@ -29,7 +29,7 @@ export interface PdfHandlerOptions {
  *
  * ```ts
  * // routes/pdf/[filename].ts
- * import { createPdfHandler } from "@dune/pdf-archive/handler";
+ * import { createPdfHandler } from "@dune/plugin-pdf/handler";
  *
  * export const handler = {
  *   GET: createPdfHandler({ dir: "/absolute/path/to/pdfs" }),
@@ -75,7 +75,7 @@ export function createPdfHandler(
       if (err instanceof Deno.errors.NotFound) {
         return new Response("PDF not found", { status: 404 });
       }
-      console.error("[dune/pdf-archive] Error serving PDF:", err);
+      console.error("[dune/plugin-pdf] Error serving PDF:", err);
       return new Response("Internal server error", { status: 500 });
     }
   };
