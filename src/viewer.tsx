@@ -98,7 +98,8 @@ export default function PDFViewer(
   const renderTaskRef = useRef<unknown>(null);
   const [pageNum, setPageNum] = useState(1);
   const [numPages, setNumPages] = useState(0);
-  const [pdfDoc, setPdfDoc] = useState<unknown>(null);
+  type PdfDoc = { getPage(n: number): Promise<unknown>; numPages: number };
+  const [pdfDoc, setPdfDoc] = useState<PdfDoc | null>(null);
 
   useEffect(() => {
     const loadPDF = async () => {
@@ -112,7 +113,7 @@ export default function PDFViewer(
       }
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
       try {
-        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        const pdf = await pdfjsLib.getDocument(pdfUrl).promise as PdfDoc;
         setPdfDoc(pdf);
         setNumPages(pdf.numPages);
         const hash = globalThis.location.hash;
@@ -127,7 +128,10 @@ export default function PDFViewer(
     loadPDF();
   }, [pdfUrl]);
 
-  const renderPage = async (pdf: { getPage(n: number): Promise<unknown> }, pageNumber: number) => {
+  const renderPage = async (
+    pdf: { getPage(n: number): Promise<unknown> },
+    pageNumber: number,
+  ) => {
     if (!canvasRef.current || !containerRef.current) return;
     if (renderTaskRef.current) {
       (renderTaskRef.current as { cancel(): void }).cancel();
@@ -136,7 +140,12 @@ export default function PDFViewer(
 
     const page = await pdf.getPage(pageNumber) as {
       getViewport(opts: { scale: number }): { width: number; height: number };
-      render(opts: { canvasContext: CanvasRenderingContext2D | null; viewport: unknown }): { promise: Promise<void> };
+      render(
+        opts: {
+          canvasContext: CanvasRenderingContext2D | null;
+          viewport: unknown;
+        },
+      ): { promise: Promise<void> };
     };
     const containerWidth = containerRef.current.clientWidth;
     const pageViewport = page.getViewport({ scale: 1.0 });
@@ -165,7 +174,7 @@ export default function PDFViewer(
   const goToPage = (newPageNum: number) => {
     if (newPageNum >= 1 && newPageNum <= numPages && pdfDoc) {
       setPageNum(newPageNum);
-      renderPage(pdfDoc as Parameters<typeof renderPage>[0], newPageNum);
+      renderPage(pdfDoc, newPageNum);
     }
   };
 
@@ -306,7 +315,12 @@ export default function PDFViewer(
         </button>
       </div>
       <div class="pdf-toolbar-separator" />
-      <button type="button" onClick={handlePrint} class="pdf-control-btn" title={l.print}>
+      <button
+        type="button"
+        onClick={handlePrint}
+        class="pdf-control-btn"
+        title={l.print}
+      >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
           <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z" />
           <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
