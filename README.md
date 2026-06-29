@@ -1,4 +1,4 @@
-# @dune/pdf
+# @dune/plugin-pdf
 
 PDF serving, text extraction, and in-browser viewing for
 [Dune CMS](https://getdune.com) sites.
@@ -19,10 +19,10 @@ Add to your site's `deno.json`:
 ```json
 {
   "imports": {
-    "@dune/pdf": "jsr:@dune/pdf",
-    "@dune/pdf/handler": "jsr:@dune/pdf/handler",
-    "@dune/pdf/extract": "jsr:@dune/pdf/extract",
-    "@dune/pdf/viewer": "jsr:@dune/pdf/viewer"
+    "@dune/plugin-pdf": "jsr:@dune/plugin-pdf",
+    "@dune/plugin-pdf/handler": "jsr:@dune/plugin-pdf/handler",
+    "@dune/plugin-pdf/extract": "jsr:@dune/plugin-pdf/extract",
+    "@dune/plugin-pdf/viewer": "jsr:@dune/plugin-pdf/viewer"
   }
 }
 ```
@@ -32,7 +32,7 @@ Add to your site's `deno.json`:
 Create a route file at `routes/pdf/[filename].ts`:
 
 ```ts
-import { createPdfHandler } from "@dune/pdf/handler";
+import { createPdfHandler } from "@dune/plugin-pdf/handler";
 import { join } from "@std/path";
 
 export const handler = {
@@ -59,7 +59,7 @@ createPdfHandler({
 ## Extracting text
 
 ```ts
-import { extractPdfText } from "@dune/pdf/extract";
+import { extractPdfText } from "@dune/plugin-pdf/extract";
 
 const result = await extractPdfText("/path/to/document.pdf");
 
@@ -79,7 +79,7 @@ To feed PDF text into Dune's search index, run extraction in a build script and
 write the result as a content file:
 
 ```ts
-import { extractPdfText } from "@dune/pdf/extract";
+import { extractPdfText } from "@dune/plugin-pdf/extract";
 
 const { text } = await extractPdfText("static/pdfs/issue-42.pdf");
 
@@ -117,11 +117,11 @@ Add the script to your template:
 
 ### Usage
 
-Import `PDFViewer` from `@dune/pdf/viewer` in your theme template:
+Import `PDFViewer` from `@dune/plugin-pdf/viewer` in your theme template:
 
 ```tsx
 /** @jsxImportSource preact */
-import PDFViewer from "@dune/pdf/viewer";
+import PDFViewer from "@dune/plugin-pdf/viewer";
 
 export default function IssueTemplate({ page, site, nav, Layout }: any) {
   const fm = page?.frontmatter ?? {};
