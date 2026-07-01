@@ -68,17 +68,28 @@ interface InjectedSearchRecord {
 }
 
 /** Minimal Fresh handler context — just the fields this plugin accesses. */
-interface FreshCtx { req: Request; params?: Record<string, string> }
+interface FreshCtx {
+  /** The incoming HTTP request. */
+  req: Request;
+  /** Route parameters, e.g. `{ filename: "report.pdf" }`. */
+  params?: Record<string, string>;
+}
 
 /** Minimal structural view of the parts of the Dune plugin API used here. */
 interface DunePluginLike {
+  /** Plugin identifier. */
   name: string;
+  /** Semver string matching the published package version. */
   version: string;
+  /** Optional human-readable description. */
   description?: string;
+  /** Lifecycle hook handlers keyed by hook name. */
   hooks: Record<string, (ctx: unknown) => unknown | Promise<unknown>>;
+  /** Public HTTP routes the plugin contributes to the site. */
   publicRoutes?: Array<
     { method?: string; path: string; handler: (fc: FreshCtx) => unknown }
   >;
+  /** Client-side bundle entry points keyed by bundle name. */
   clientEntries?: Record<string, string>;
 }
 

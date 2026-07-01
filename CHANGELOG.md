@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.5] — 2026-07-01
+
+### Fixed
+
+- Added JSDoc to all properties of the internal `FreshCtx` and `DunePluginLike` interfaces — they surface through the `pdfPlugin` return type in deno doc, requiring documentation for a full JSR score.
+
 ## [0.3.3] — 2026-07-01
 
 ### Fixed
