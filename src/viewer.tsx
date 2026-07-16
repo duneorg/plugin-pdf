@@ -18,11 +18,18 @@
  * https://github.com/mozilla/pdf.js/releases — use the "legacy" build for
  * broadest browser compatibility.
  *
+ * To add site-specific chrome (e.g. links between sibling documents) into
+ * the same toolbar row as the page navigation controls, pass `extraControls`:
+ *
+ * ```tsx
+ * <PDFViewer pdfUrl={pdfUrl} extraControls={<MyDocumentNav />} />
+ * ```
+ *
  * @module
  */
 
 /** @jsxImportSource preact */
-import type { JSX } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 /** Labels for all UI strings — override to localise. */
@@ -52,6 +59,13 @@ export interface PDFViewerProps {
   workerSrc?: string;
   /** Override UI label strings for localisation. */
   labels?: PDFViewerLabels;
+  /**
+   * Extra content rendered at the start of each control bar (both the top
+   * and bottom toolbar), before the page navigation controls. Use this to
+   * add site-specific chrome — e.g. prev/next links between sibling
+   * documents — into the same toolbar row instead of a separate bar.
+   */
+  extraControls?: ComponentChildren;
 }
 
 const DEFAULT_LABELS: Required<PDFViewerLabels> = {
@@ -107,8 +121,12 @@ function ChevronBarRight() {
  * as a Preact component.
  */
 export default function PDFViewer(
-  { pdfUrl, workerSrc = "/static/pdf.worker.min.js", labels = {} }:
-    PDFViewerProps,
+  {
+    pdfUrl,
+    workerSrc = "/static/pdf.worker.min.js",
+    labels = {},
+    extraControls,
+  }: PDFViewerProps,
 ): JSX.Element {
   const l = { ...DEFAULT_LABELS, ...labels };
 
@@ -278,6 +296,7 @@ export default function PDFViewer(
 
   const Controls = () => (
     <div class="pdf-controls">
+      {extraControls}
       <div class="pdf-nav-group">
         <button
           type="button"

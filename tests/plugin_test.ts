@@ -28,7 +28,10 @@ Deno.test("plugin: exposes the viewer client bundle", () => {
 
 Deno.test("plugin: search hook registered by default, absent when index disabled", () => {
   assertExists(pdfPlugin().hooks.onSearchRecordsCollect);
-  assertEquals(pdfPlugin({ index: false }).hooks.onSearchRecordsCollect, undefined);
+  assertEquals(
+    pdfPlugin({ index: false }).hooks.onSearchRecordsCollect,
+    undefined,
+  );
 });
 
 Deno.test("plugin: pluginName tag for loader config lookup", () => {

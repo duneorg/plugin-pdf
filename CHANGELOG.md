@@ -1,26 +1,38 @@
 # Changelog
 
+## [1.1.0] — 2026-07-16
+
+### Added
+
+- **`PDFViewer`'s `extraControls` prop.** Content rendered at the start of each
+  control bar (both the top and bottom toolbar), before the page navigation
+  controls. Lets consuming themes add site-specific chrome — e.g. links between
+  sibling documents — into the same toolbar row instead of a separate bar.
+  Backward compatible; omitting the prop changes nothing.
+
 ## [1.0.0] — 2026-07-05
 
-First stable release. No breaking changes from 0.3.5 — the major bump marks
-the package's public API as stable going forward, per semver.
+First stable release. No breaking changes from 0.3.5 — the major bump marks the
+package's public API as stable going forward, per semver.
 
 ### Fixed
 
-- **JSR doc-coverage score was still 55% despite the 0.3.4/0.3.5 fixes.**
-  Those fixes addressed docs on internal interfaces; the larger cause was
-  that `deno_doc` resolves a re-exported symbol as an unresolved reference
-  carrying no JSDoc whenever its origin file is itself a separate
-  `deno.json` entrypoint — even when the origin declaration is fully
-  documented. Moving each re-export's doc comment to sit directly before the
-  specifier name, inside the export braces, fixes this; all 6 entrypoints
-  are now at 100% documented symbols.
+- **JSR doc-coverage score was still 55% despite the 0.3.4/0.3.5 fixes.** Those
+  fixes addressed docs on internal interfaces; the larger cause was that
+  `deno_doc` resolves a re-exported symbol as an unresolved reference carrying
+  no JSDoc whenever its origin file is itself a separate `deno.json` entrypoint
+  — even when the origin declaration is fully documented. Moving each
+  re-export's doc comment to sit directly before the specifier name, inside the
+  export braces, fixes this; all 6 entrypoints are now at 100% documented
+  symbols.
 
 ## [0.3.5] — 2026-07-01
 
 ### Fixed
 
-- Added JSDoc to all properties of the internal `FreshCtx` and `DunePluginLike` interfaces — they surface through the `pdfPlugin` return type in deno doc, requiring documentation for a full JSR score.
+- Added JSDoc to all properties of the internal `FreshCtx` and `DunePluginLike`
+  interfaces — they surface through the `pdfPlugin` return type in deno doc,
+  requiring documentation for a full JSR score.
 
 ## [0.3.3] — 2026-07-01
 
@@ -32,4 +44,5 @@ the package's public API as stable going forward, per semver.
 
 ### Fixed
 
-- Replaced `any` in internal `DunePluginLike` interface with a typed `FreshCtx` stub — fixes `deno lint` and JSR score.
+- Replaced `any` in internal `DunePluginLike` interface with a typed `FreshCtx`
+  stub — fixes `deno lint` and JSR score.
