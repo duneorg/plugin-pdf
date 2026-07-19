@@ -11,14 +11,17 @@
  *   - src: "jsr:@dune/plugin-pdf"
  *     config:
  *       dir: "static/pdfs"   # directory of PDF files (default: static/pdfs)
- *       route: "/pdf"        # URL prefix to serve them at (default: /pdf)
+ *       route: "/pdf"        # URL prefix to serve raw files at (default: /pdf)
+ *       linkRoute: "/issues" # URL prefix for search-result links (default: route)
  *       index: true          # extract + index PDF text for search (default: true)
  * ```
  *
  * What it wires:
  * - A public route `{route}/:filename` serving PDFs from `dir`
- * - The `onSearchRecordsCollect` hook: extracts text from each PDF and injects
- *   it into the search index (results link to `{route}/{filename}`)
+ * - The `onSearchRecordsCollect` hook: extracts text from each PDF page and
+ *   injects one record per page into the search index (results link to
+ *   `{linkRoute}/{filename-without-extension}#page={n}`, so a hit opens
+ *   straight to the matching page)
  * - A `viewer` client bundle exposing {@link PDFViewer} at
  *   `/plugins/pdf/viewer.js`
  *
@@ -41,12 +44,23 @@ export interface PdfPluginConfig {
    */
   dir?: string;
   /**
-   * URL prefix the PDFs are served at.
+   * URL prefix the PDFs are served at (used for the raw file — e.g. embedded
+   * in a viewer).
    * @default "/pdf"
    */
   route?: string;
   /**
-   * Extract and index PDF text into the search index.
+   * URL prefix used for search-result links, with an optional `{page}`
+   * placeholder for the matched page number (e.g. `/issues` produces
+   * `/issues/{filename-without-extension}#page={n}`, letting a site's own
+   * PDF-viewer page render the deep link instead of downloading the raw
+   * file). Falls back to `route` (raw file link) when unset.
+   * @default route
+   */
+  linkRoute?: string;
+  /**
+   * Extract and index PDF text into the search index, one record per page
+   * so results link to the matching page instead of the start of the PDF.
    * @default true
    */
   index?: boolean;
@@ -93,7 +107,7 @@ interface DunePluginLike {
   clientEntries?: Record<string, string>;
 }
 
-const PLUGIN_VERSION = "0.3.0";
+const PLUGIN_VERSION = "0.4.0";
 
 /** Resolve a possibly-relative directory against the site root. */
 function resolveDir(dir: string): string {
@@ -131,6 +145,9 @@ function titleFromFilename(filename: string): string {
 function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
   const dir = resolveDir(config.dir ?? "static/pdfs");
   const routeBase = (config.route ?? "/pdf").replace(/\/+$/, "") || "/pdf";
+  const linkRouteBase = config.linkRoute
+    ? config.linkRoute.replace(/\/+$/, "") || "/"
+    : routeBase;
   const index = config.index ?? true;
 
   const serve = createPdfHandler({ dir, cacheControl: config.cacheControl });
@@ -171,14 +188,21 @@ function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
           continue;
         }
         try {
-          const { text } = await extractPdfText(join(dir, entry.name));
-          if (!text) continue;
-          records.push({
-            route: `${routeBase}/${entry.name}`,
-            title: titleFromFilename(entry.name),
-            body: text,
-            template: "pdf",
-          });
+          const { pages } = await extractPdfText(join(dir, entry.name));
+          const title = titleFromFilename(entry.name);
+          const basename = entry.name.replace(/\.pdf$/i, "");
+          for (let i = 0; i < pages.length; i++) {
+            const text = pages[i];
+            if (!text) continue;
+            const pageNum = i + 1;
+            records.push({
+              route: `${linkRouteBase}/${basename}#page=${pageNum}`,
+              title: `${title} — page ${pageNum}`,
+              body: text,
+              template: "pdf",
+              fields: { subtype: "pdf", page: String(pageNum) },
+            });
+          }
         } catch (err) {
           console.warn(
             `[dune/plugin-pdf] failed to extract text from ${entry.name}: ${
