@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0] — 2026-07-20
+
+### Added
+
+- **Per-page search indexing.** Each PDF now indexes one search record per
+  extracted page instead of one whole-document record — a single
+  query-term hit no longer gets diluted across a full document's
+  concatenated text, and results link straight to the matching page
+  (`#page={n}`) instead of always page 1. Each page record carries
+  `subtype: "pdf"` so PDF content participates in the same `type`/subtype
+  facet as other content.
+- **`linkRoute` config option.** Decoupled from the raw-file-serving
+  `route`, so search-result hrefs can point at a site's own PDF-viewer
+  page (e.g. `/issues/{slug}#page=N`) instead of the raw file. Falls back
+  to `route` with a `#page=N` anchor when unset.
+
 ## [1.1.0] — 2026-07-16
 
 ### Added
