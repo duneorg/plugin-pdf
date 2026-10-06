@@ -46,6 +46,8 @@ export interface PDFViewerLabels {
   print?: string;
   /** Label for the download link. @default "Download" */
   download?: string;
+  /** Accessible name for the page-number input. @default "Page number" */
+  pageNumber?: string;
 }
 
 /** Props for the {@link PDFViewer} Preact island. */
@@ -75,6 +77,7 @@ const DEFAULT_LABELS: Required<PDFViewerLabels> = {
   lastPage: "Last page",
   print: "Print",
   download: "Download",
+  pageNumber: "Page number",
 };
 
 function ChevronLeft() {
@@ -322,7 +325,8 @@ export default function PDFViewer(
           type="number"
           value={pageNum}
           min="1"
-          max={numPages}
+          max={numPages || undefined}
+          aria-label={l.pageNumber}
           onChange={(e) => {
             const val = parseInt((e.target as HTMLInputElement).value);
             if (val && val >= 1 && val <= numPages) goToPage(val);
