@@ -1,13 +1,18 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.0] — 2026-10-07
+
+### Added
+
+- **`labels.pageNumber`** — accessible name for the toolbar's page-number input
+  (default `"Page number"`), overridable through the existing `labels` prop like
+  the other toolbar strings.
 
 ### Fixed
 
 - **Page-number input had no accessible name** (axe `label`, critical). It now
-  gets an `aria-label` from the new `labels.pageNumber` option (default
-  `"Page number"`). The input also no longer renders `max="0"` before the
-  document has loaded.
+  gets an `aria-label` from `labels.pageNumber`. The input also no longer
+  renders `max="0"` before the document has loaded.
 
 ## [1.2.1] — 2026-08-24
 
