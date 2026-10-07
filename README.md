@@ -159,6 +159,7 @@ export default function IssueTemplate({ page, site, nav, Layout }: any) {
     lastPage: "Letzte Seite",
     print: "Drucken",
     download: "Herunterladen",
+    pageNumber: "Seitenzahl",
   }}
 />;
 ```

@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Page-number input had no accessible name** (axe `label`, critical). It now
+  gets an `aria-label` from the new `labels.pageNumber` option (default
+  `"Page number"`). The input also no longer renders `max="0"` before the
+  document has loaded.
+
 ## [1.2.1] — 2026-08-24
 
 ### Fixed
