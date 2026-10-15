@@ -18,6 +18,10 @@
     "preact/jsx-runtime": "npm:preact@^10/jsx-runtime",
     "preact/jsx-dev-runtime": "npm:preact@^10/jsx-dev-runtime"
   },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
   "tasks": {
     "test": "deno test --allow-read --allow-write tests/",
     "check": "deno fmt --check && deno lint && deno check src/**/*.ts tests/**/*.ts"
