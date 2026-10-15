@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1] — 2026-10-15
+
+### Fixed
+
+- **Published viewer failed with `React is not defined` when bundled as an
+  island.** `deno.json` declared no `compilerOptions`, so JSR stamped the
+  classic JSX runtime (`React.createElement`) onto every `.tsx` file. The
+  package now declares `jsx: "react-jsx"` with `jsxImportSource: "preact"`, the
+  same as `@dune/core` and `@dune/plugin-admin`, so the published source uses
+  Preact's automatic runtime. No API or behavior change in workspace
+  development, where the local source was never affected.
+
 ## [1.3.0] — 2026-10-07
 
 ### Added
