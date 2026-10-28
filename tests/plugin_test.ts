@@ -72,7 +72,7 @@ async function withFixtureDir(
 
 Deno.test("plugin: onSearchRecordsCollect injects one record per non-empty page", async () => {
   await withFixtureDir(async (dir) => {
-    const plugin = pdfPlugin({ dir, route: "/pdf" });
+    const plugin = pdfPlugin({ dir, route: "/pdf", cacheDir: false });
     const ctx = { data: { records: [] as Record<string, unknown>[] } };
     await plugin.hooks.onSearchRecordsCollect(ctx);
 
@@ -85,9 +85,25 @@ Deno.test("plugin: onSearchRecordsCollect injects one record per non-empty page"
   });
 });
 
+Deno.test("plugin: extracted text is cached and reused by the search hook", async () => {
+  await withFixtureDir(async (dir) => {
+    const cacheDir = `${dir}/.cache`;
+    const collect = async () => {
+      const plugin = pdfPlugin({ dir, route: "/pdf", cacheDir });
+      const ctx = { data: { records: [] as Record<string, unknown>[] } };
+      await plugin.hooks.onSearchRecordsCollect(ctx);
+      return ctx.data.records;
+    };
+    const cold = await collect();
+    assertEquals([...Deno.readDirSync(cacheDir)].length, 1);
+    const warm = await collect();
+    assertEquals(warm, cold);
+  });
+});
+
 Deno.test("plugin: default route links to raw file with #page anchor", async () => {
   await withFixtureDir(async (dir) => {
-    const plugin = pdfPlugin({ dir, route: "/pdf" });
+    const plugin = pdfPlugin({ dir, route: "/pdf", cacheDir: false });
     const ctx = { data: { records: [] as Record<string, unknown>[] } };
     await plugin.hooks.onSearchRecordsCollect(ctx);
 
@@ -97,7 +113,12 @@ Deno.test("plugin: default route links to raw file with #page anchor", async () 
 
 Deno.test("plugin: linkRoute overrides the search-result link prefix", async () => {
   await withFixtureDir(async (dir) => {
-    const plugin = pdfPlugin({ dir, route: "/pdf", linkRoute: "/issues" });
+    const plugin = pdfPlugin({
+      dir,
+      route: "/pdf",
+      linkRoute: "/issues",
+      cacheDir: false,
+    });
     const ctx = { data: { records: [] as Record<string, unknown>[] } };
     await plugin.hooks.onSearchRecordsCollect(ctx);
 

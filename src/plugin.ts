@@ -33,7 +33,7 @@
 
 import { isAbsolute, join } from "@std/path";
 import { createPdfHandler } from "./handler.ts";
-import { extractPdfText } from "./extract.ts";
+import { extractPdfText, extractPdfTextCached, pruneCache } from "./extract.ts";
 
 /** Configuration accepted from the `site.yaml` plugin entry. */
 export interface PdfPluginConfig {
@@ -66,6 +66,14 @@ export interface PdfPluginConfig {
   index?: boolean;
   /** Cache-Control header for served PDFs. */
   cacheControl?: string;
+  /**
+   * Directory where extracted PDF text is cached between runs, keyed by file
+   * name and validated against size and modification time, so restarts skip
+   * re-extracting unchanged PDFs. Relative paths resolve against the site root.
+   * Set to `false` to disable.
+   * @default ".dune/cache/pdf-text"
+   */
+  cacheDir?: string | false;
 }
 
 /**
@@ -149,6 +157,9 @@ function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
     ? config.linkRoute.replace(/\/+$/, "") || "/"
     : routeBase;
   const index = config.index ?? true;
+  const cacheDir = config.cacheDir === false
+    ? null
+    : resolveDir(config.cacheDir ?? ".dune/cache/pdf-text");
 
   const serve = createPdfHandler({ dir, cacheControl: config.cacheControl });
 
@@ -183,12 +194,17 @@ function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
         return;
       }
 
+      const pdfNames: string[] = [];
       for (const entry of entries) {
         if (!entry.isFile || !entry.name.toLowerCase().endsWith(".pdf")) {
           continue;
         }
+        pdfNames.push(entry.name);
         try {
-          const { pages } = await extractPdfText(join(dir, entry.name));
+          const path = join(dir, entry.name);
+          const { pages } = cacheDir
+            ? await extractPdfTextCached(path, cacheDir)
+            : await extractPdfText(path);
           const title = titleFromFilename(entry.name);
           const basename = entry.name.replace(/\.pdf$/i, "");
           for (let i = 0; i < pages.length; i++) {
@@ -211,6 +227,7 @@ function pdfPlugin(config: PdfPluginConfig = {}): DunePluginLike {
           );
         }
       }
+      if (cacheDir) await pruneCache(cacheDir, pdfNames);
     };
   }
 
