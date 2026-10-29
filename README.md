@@ -75,6 +75,13 @@ structured extraction (column detection, footnotes, etc.), build on top of
 
 ### Search indexing
 
+When the plugin runs with `index: true` (the default), the text it extracts for
+search is cached in `.dune/cache/pdf-text` (relative to the site root) and
+reused on later starts while a PDF's size and modification time are unchanged,
+so restarts don't re-extract every PDF. Change the location with `cacheDir`, or
+set `cacheDir: false` to turn the cache off. Add `.dune/` to `.gitignore`. In
+code, `extractPdfTextCached(path, cacheDir)` does the same for a single file.
+
 To feed PDF text into Dune's search index, run extraction in a build script and
 write the result as a content file:
 

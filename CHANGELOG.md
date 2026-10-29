@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Extracted PDF text is cached on disk between runs** (#5). The search hook
+  used to re-extract every PDF on every boot (on a 72-PDF site: 5.2 s on a fast
+  laptop, about 30 s on a small VPS, all on the main thread). Entries are keyed
+  by file name and validated against size and modification time, written
+  atomically, and pruned when the PDF is gone. A missing or corrupt entry is
+  just re-extracted. A warm collect of the same 72 PDFs takes 23 ms.
+  - New `cacheDir` option (default `.dune/cache/pdf-text`, relative to the site
+    root; `false` disables).
+  - New `extractPdfTextCached(pdfPath, cacheDir)` and `pruneCache()` exports in
+    `@dune/plugin-pdf/extract`.
+
 ## [1.3.1] — 2026-10-15
 
 ### Fixed
